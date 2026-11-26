@@ -274,7 +274,21 @@ def get_project(pid: int, user: User = Depends(current_user),
 class ImportIn(BaseModel):
     spec_url: str | None = None
     spec: dict | None = None
-    spec_text: str | None = None   # 上传的文件内容（JSON 或 YAML）
+    spec_text: str | None = None      # 上传的文件内容（JSON 或 YAML）
+    exclude_infra: bool = True        # 排除登录/登出/静态/文档等非业务接口
+
+
+# 不属于业务 API 的路径前缀：门禁、静态资源、接口文档本身
+INFRA_PREFIXES = (
+    "/login", "/logout", "/signin", "/signout", "/auth/",
+    "/static/", "/site/", "/assets/", "/favicon",
+    "/docs", "/redoc", "/openapi.json", "/swagger",
+    "/.well-known/",
+)
+
+
+def _is_infra(path: str) -> bool:
+    return any(path.startswith(prefix) for prefix in INFRA_PREFIXES)
 
 
 @router.post("/projects/{pid}/import")
@@ -342,8 +356,11 @@ async def import_spec(pid: int, payload: ImportIn, user: User = Depends(current_
             )
 
     endpoints = parse_openapi(spec)
+    total_before = len(endpoints)
+    if payload.exclude_infra:
+        endpoints = [ep for ep in endpoints if not _is_infra(ep["path"])]
     if not endpoints:
-        raise HTTPException(400, "没有解析到任何接口")
+        raise HTTPException(400, "没有解析到任何接口（可能全被当作认证/文档类排除了）")
 
     # 按依赖顺序清理：审计/缺陷 → 结果 → 跑批 → 用例 → 接口
     # 直接删 cases 会撞上 run_items 的外键，所以先清结果
@@ -364,9 +381,11 @@ async def import_spec(pid: int, payload: ImportIn, user: User = Depends(current_
 
     for ep in endpoints:
         db.add(Endpoint(project_id=pid, **ep))
-    audit(db, user.id, "spec.import", f"project={pid}", f"{len(endpoints)} endpoints")
+    audit(db, user.id, "spec.import", f"project={pid}",
+          f"{len(endpoints)} endpoints, excluded={total_before - len(endpoints)}")
     db.commit()
-    return {"endpoints": len(endpoints)}
+    return {"endpoints": len(endpoints),
+            "excluded": total_before - len(endpoints)}
 
 
 def _upsert_endpoint(db, project_id: int, data: dict) -> tuple:
