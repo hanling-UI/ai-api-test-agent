@@ -127,7 +127,9 @@ async def execute_run(
     sem = asyncio.Semaphore(CONCURRENCY)
     results: list[dict] = []
 
-    async with httpx.AsyncClient(timeout=TIMEOUT, follow_redirects=False) as client:
+    # 跟随重定向：真实浏览器会跟，测试工具也必须跟，
+    # 否则「已登录访问 /login → 303 跳首页」会被误判为失败。
+    async with httpx.AsyncClient(timeout=TIMEOUT, follow_redirects=True) as client:
 
         async def worker(case: Case):
             async with sem:
