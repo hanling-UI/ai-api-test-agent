@@ -103,6 +103,9 @@ async function viewCases() {
       <span class="spacer" style="flex:1"></span>
       <button id="btnImport">从服务地址导入</button>
       <button id="btnUpload">上传 spec 文件</button>
+      <label class="muted" style="display:flex;align-items:center;gap:5px;margin:0 6px">
+        <input type="checkbox" id="roOnly" checked style="width:auto"> 仅只读接口
+      </label>
       <button id="btnGen" class="primary">生成用例</button>
       <input type="file" id="specFile" accept=".json,.yaml,.yml" style="display:none">
     </div>
@@ -257,7 +260,11 @@ async function viewCases() {
     const old = btn.textContent;
     btn.disabled = true; btn.textContent = '生成中…（约 30~60 秒）';
     try {
-      const r = await api(`/api/projects/${pid}/generate`, { method: 'POST', body: JSON.stringify({ only_missing: true }) });
+      const readOnly = head.querySelector('#roOnly').checked;
+      const r = await api(`/api/projects/${pid}/generate`, {
+        method: 'POST',
+        body: JSON.stringify({ only_missing: true, read_only: readOnly }),
+      });
       alert(`生成完成：新增 ${r.added} 条\n接口 ${r.endpoints} 个，已有用例跳过 ${r.skipped} 个，失败 ${r.failed} 个`);
       renderAll();
     } catch (e) {

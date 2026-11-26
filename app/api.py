@@ -610,6 +610,7 @@ def patch_case(cid: int, payload: CasePatch, user: User = Depends(current_user),
 class GenerateIn(BaseModel):
     endpoint_ids: list[int] | None = None
     only_missing: bool = True
+    read_only: bool = False      # True = 只给 GET/HEAD 生成用例，避免误伤写接口
 
 
 @router.post("/projects/{pid}/generate")
@@ -619,6 +620,8 @@ async def generate(pid: int, payload: GenerateIn, user: User = Depends(current_u
     if not OPENAI_API_KEY:
         raise HTTPException(400, "未配置 OPENAI_API_KEY，无法生成用例（执行/归因不受影响）")
     q = db.query(Endpoint).filter(Endpoint.project_id == pid)
+    if payload.read_only:
+        q = q.filter(Endpoint.method.in_(["GET", "HEAD"]))
     if payload.endpoint_ids:
         q = q.filter(Endpoint.id.in_(payload.endpoint_ids))
     endpoints = q.all()
