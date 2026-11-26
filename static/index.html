@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI 接口测试 Agent</title>
+  <link rel="stylesheet" href="/assets/style.v3.css?b=__BUILD__">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="logo">AI</span>
+    <span class="brand-text">接口测试 Agent</span>
+  </div>
+
+  <div class="project-picker">
+    <select id="projectSelect" title="切换项目"></select>
+    <button id="newProject" class="btn-ghost">+ 新建项目</button>
+    <button id="projectSettings" class="btn-ghost">⚙</button>
+  </div>
+
+  <nav id="tabs" class="topnav"></nav>
+
+  <div class="spacer"></div>
+
+  <div class="user-menu">
+    <button id="userBtn" class="user-btn">
+      <span id="avatar" class="avatar">A</span>
+      <span id="who" class="who"></span>
+      <span class="caret">▾</span>
+    </button>
+    <div id="userDropdown" class="dropdown">
+      <div class="dropdown-head">
+        <div id="ddName" class="dd-name"></div>
+        <div id="ddEmail" class="muted"></div>
+      </div>
+      <a data-menu="profile">个人中心</a>
+      <a data-menu="logout">退出登录</a>
+    </div>
+  </div>
+</header>
+
+<main id="main" class="main">
+  <p class="muted">加载中…</p>
+</main>
+
+<script>window.__BUILD__="__BUILD__";</script>
+<script src="/assets/app.v3.js?b=__BUILD__"></script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>登录 · AI 接口测试 Agent</title>
+  <link rel="stylesheet" href="/assets/style.v3.css?b=__BUILD__">
+</head>
+<body class="login-body">
+  <form class="login-card" id="loginForm">
+    <span class="logo">AI</span>
+    <h1>AI 接口测试 Agent</h1>
+    <p class="muted">给一个接口服务，自动生成用例、执行、归因、提单</p>
+
+    <label>公司邮箱<input id="email" type="email" value="tester@demo.com" required></label>
+    <label>密码
+      <div class="pw-wrap" style="margin-top:6px">
+        <input id="password" type="password" value="demo1234" required style="width:100%">
+        <button type="button" class="pw-eye" id="eyeBtn">👁</button>
+      </div>
+    </label>
+
+    <div class="error" id="err"></div>
+    <button type="submit" class="primary">登录</button>
+
+    <div class="demo-accounts">
+      <span>演示账号（密码 demo1234）：</span>
+      <button type="button" data-email="admin@demo.com">管理员</button>
+      <button type="button" data-email="tester@demo.com">测试</button>
+      <button type="button" data-email="viewer@demo.com">只读</button>
+    </div>
+  </form>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+    $('eyeBtn').onclick = () => {
+      const input = $('password');
+      const show = input.type === 'password';
+      input.type = show ? 'text' : 'password';
+      $('eyeBtn').textContent = show ? '🙈' : '👁';
+    };
+    document.querySelectorAll('[data-email]').forEach((b) => {
+      b.onclick = () => { $('email').value = b.dataset.email; };
+    });
+
+    $('loginForm').onsubmit = async (e) => {
+      e.preventDefault();
+      $('err').textContent = '';
+      try {
+        const resp = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: $('email').value.trim(),
+            password: $('password').value,
+          }),
+        });
+        const data = await resp.json();
+        if (!resp.ok) throw new Error(data.detail || '登录失败');
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        location.href = '/';
+      } catch (ex) { $('err').textContent = ex.message; }
+    };
+  </script>
+</body>
+</html>
