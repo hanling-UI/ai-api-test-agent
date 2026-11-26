@@ -16,6 +16,8 @@ def rule_verdict(want_status: int, got_status: int) -> tuple[str, str]:
         return "bug", f"接口返回 {got}，服务端未处理该输入（期望 {want}）"
     if want == 401 and got == 200:
         return "bug", "未携带凭证却返回 200，鉴权可绕过"
+    if got in (401, 403) and want != got:
+        return "env", f"返回 {got}：鉴权失败（Cookie/Token 缺失或已过期），先确认登录态再判断是否缺陷"
     if want < 500 and 400 <= got < 500 and got != want:
         return "case_error", f"期望 {want}，实际 {got}，二者都是客户端错误，应检查用例断言"
     return "case_error", f"期望 {want}，实际 {got}，需核对用例参数"

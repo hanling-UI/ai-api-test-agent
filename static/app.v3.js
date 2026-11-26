@@ -368,14 +368,25 @@ async function viewRun() {
   };
 
   if (state.runId) {
-    await watchRun(state.runId);
+    try {
+      await watchRun(state.runId);
+    } catch (e) {
+      // 记录可能已被删除（项目重建/重新导入），回到"无记录"状态而不是报错
+      state.runId = null;
+      body.innerHTML = '<div class="card"><p class="muted">上一次的跑批记录已不存在，点右上角「运行全部用例」重新跑一次。</p></div>';
+    }
   } else {
     // 没有当前跑批时，自动加载最近一次
     try {
       const runs = await api(`/api/projects/${pid}/runs`);
       if (runs.length) {
         state.runId = runs[0].id;
-        await watchRun(runs[0].id);
+        try {
+          await watchRun(runs[0].id);
+        } catch (e) {
+          state.runId = null;
+          body.innerHTML = '<div class="card"><p class="muted">没有可展示的跑批记录，点右上角运行一次。</p></div>';
+        }
       } else {
         body.innerHTML = '<div class="card"><p class="muted">还没有跑批记录，点右上角「运行全部用例」。</p></div>';
       }
