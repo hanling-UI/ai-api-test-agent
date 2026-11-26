@@ -5,3 +5,8 @@ __pycache__/
 .idea/
 outputs/
 *.log
+
+# 本地日志与测试数据库
+*.db
+*.err
+*.log
