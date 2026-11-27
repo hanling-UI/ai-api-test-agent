@@ -29,37 +29,13 @@ docker compose up -d --build     # 起数据库 + 被测 mock 服务 + 应用
 
 ## 二、核心流程
 
-```
-接入：OpenAPI / Postman 集合 / 粘贴 cURL / 需要口令的服务
-   ↓
-生成：结构化输出（JSON Schema 约束）+ 指纹去重
-   ↓
-执行：asyncio 并发 + 超时 + 断言（状态码 / 字段 / 耗时），逐条记录 trace
-   ↓
-归因：规则优先（5xx→bug、401↔200→鉴权绕过、4xx→用例问题）+ 模型补解释
-   ↓
-提单：生成缺陷草稿 →【人工确认】→ 提交 + 审计留痕
-```
+![核心流程](docs/images/flow.png)
 
 ---
 
 ## 三、架构
 
-```
-浏览器（原生 HTML/CSS/JS，无构建）
-   │  fetch + SSE
-   ▼
-FastAPI ── JWT 鉴权 ── 项目级 RBAC（系统管理员 / 项目 admin / tester / viewer）
-   │
-   ├── 解析层：OpenAPI 解析 / Postman 集合 / cURL 解析 / 文档路径自动探测
-   ├── 生成层：6 维度用例生成 + Schema 校验 + 指纹去重
-   ├── 执行层：asyncio + Semaphore 并发、超时、跟随重定向、断言引擎
-   ├── 归因层：规则引擎 + LLM 解释（判定不交给模型，避免漂移）
-   ├── 确认层：LangGraph 状态图（execute → triage → draft →【interrupt】→ confirm）
-   └── 治理层：审计日志、成员管理、只读模式、统计
-   ▼
-PostgreSQL（用例 / 跑批 / 缺陷 / 审计 / 账号）+ 大模型（qwen-flash / qwen-plus）
-```
+![架构](docs/images/architecture.png)
 
 **为什么图只管决策**：批量执行是并发任务，塞进图里状态会爆炸；图负责「分支、循环、中断等人确认」。
 
