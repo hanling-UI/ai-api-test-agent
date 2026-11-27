@@ -81,9 +81,16 @@ def parse_openapi(spec: dict) -> list[dict]:
                             break
                     break
 
-            auth_type = "none"
-            if op.get("security") or (security_defined and not op.get("security")):
+            # OpenAPI 的 security 是"继承"语义：
+            # 操作级写了 security 就覆盖全局；写了空数组 [] 表示该接口公开，
+            # 只有"完全没写"时才继承全局声明。之前一律按全局判，会把公开接口
+            # 误判成需要鉴权（Petstore 上产生了 8 条假 bug）。
+            if "security" in op:
+                auth_type = "bearer" if op.get("security") else "none"
+            elif spec.get("security"):
                 auth_type = "bearer"
+            else:
+                auth_type = "none"
 
             endpoints.append(
                 {
