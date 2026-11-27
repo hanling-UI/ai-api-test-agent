@@ -4,9 +4,14 @@
 
 不是聊天机器人，也不是"套了 prompt 的页面"：它真的发 HTTP 请求、真的跑断言、真的提单。
 
-- **在线体验**：https://ai-api-test-agent.onrender.com
-- **演示账号**：`admin@demo.com` / `tester@demo.com` / `viewer@demo.com`，密码均为 `demo1234`
-- 免费实例 15 分钟无访问会休眠，首次打开约需 30~60 秒
+**不提供公开演示实例**（调用大模型会产生费用，公开会被刷），请按下方「快速开始」在本地一键运行：
+
+```bash
+docker compose up -d --build     # 起数据库 + 被测 mock 服务 + 应用
+# 打开 http://localhost:8000
+```
+
+演示账号：`admin@demo.com` / `tester@demo.com` / `viewer@demo.com`，密码均为 `demo1234`（首次启动自动创建）。
 
 ---
 
